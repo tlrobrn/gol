@@ -52,7 +52,7 @@ use std::collections::HashMap;
 /// assert_eq!(Point{x: 1, y: 1}, p0 + p1);
 /// assert_eq!(Point{x: -1, y: 1}, p0 - p1);
 /// ```
-#[derive(Clone, Copy, Hash, Eq, PartialEq, Debug)]
+#[derive(Clone, Copy, Hash, Eq, PartialEq, Debug, PartialOrd, Ord)]
 pub struct Point {
     /// `x` coordinate in the integer plane.
     pub x: i64,
@@ -274,6 +274,16 @@ impl Grid {
         self
     }
 
+    pub fn window(&self, upper_left: Point, lower_right: Point) -> GridWindow {
+        GridWindow {
+            grid: self,
+            x: upper_left.x,
+            y: upper_left.y,
+            end_x: lower_right.x,
+            end_y: lower_right.y,
+        }
+    }
+
     fn count_neighbors(&self, point: &Point) -> usize {
         neighbors(*point).iter().fold(
             0,
@@ -293,6 +303,37 @@ impl Grid {
             .collect()
     }
 }
+
+pub struct GridWindow<'a> {
+    grid: &'a Grid,
+    start_x: i64,
+    start_y: i64,
+    x: i64,
+    y: i64,
+    end_x: i64,
+    end_y: i64,
+}
+
+impl<'a> Iterator for GridWindow<'a> {
+    type Item = (Point, u64);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        for y in self.y..self.end_y {
+            self.y = y;
+            self.x = self.start_x;
+            for x in self.x..self.end_x {
+                self.x = x;
+                let point = Point { x: x, y: y };
+                if let Some(age) = self.grid.age_of_point(&point) {
+                    return Some((point, age));
+                }
+            }
+        }
+
+        return None;
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -478,5 +519,26 @@ mod grid_tests {
         g.remove_point(&point);
 
         assert_eq!(None, g.age_of_point(&point));
+    }
+
+    #[test]
+    fn window_iterates_over_each_point_within_it() {
+        let mut points = vec![
+            Point { x: 0, y: 1 },
+            Point { x: -1, y: 0 },
+            Point { x: 1, y: 0 },
+        ];
+        points.sort();
+
+        let grid = Grid::with_points(points.iter());
+
+        let mut result: Vec<Point> = grid
+            .window(Point { x: -2, y: -2 }, Point { x: 2, y: 2 })
+            .map(|(point, _age)| point)
+            .collect();
+
+        result.sort();
+
+        assert_eq!(points, result);
     }
 }
