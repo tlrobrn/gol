@@ -274,13 +274,36 @@ impl Grid {
         self
     }
 
-    pub fn window(&self, upper_left: Point, lower_right: Point) -> GridWindow {
+    /// Create an iterator over the given sub-range of the `Grid`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use gol::{Grid, Point};
+    /// let points = vec![
+    ///     Point { x: 5, y: 1 },
+    ///     Point { x: 5, y: 2 },
+    ///     Point { x: 5, y: 3 },
+    /// ];
+    /// let grid = Grid::with_points(points.iter());
+    ///
+    /// let mut result: Vec<Point> = grid
+    ///     .window(Point { x: 5, y: 1 }, Point { x: 6, y: 4 })
+    ///     .map(|(point, _age)| point)
+    ///     .collect();
+    ///
+    /// result.sort();
+    ///
+    /// assert_eq!(points, result);
+    /// ```
+    pub fn window(&self, lower_left: Point, upper_right: Point) -> GridWindow {
         GridWindow {
             grid: self,
-            x: upper_left.x,
-            y: upper_left.y,
-            end_x: lower_right.x,
-            end_y: lower_right.y,
+            start_x: lower_left.x,
+            x: lower_left.x,
+            y: lower_left.y,
+            end_x: upper_right.x,
+            end_y: upper_right.y,
         }
     }
 
@@ -304,33 +327,42 @@ impl Grid {
     }
 }
 
+/// Subset of the `Grid` that can be iterated over.
 pub struct GridWindow<'a> {
     grid: &'a Grid,
     start_x: i64,
-    start_y: i64,
     x: i64,
     y: i64,
     end_x: i64,
     end_y: i64,
 }
 
+impl<'a> GridWindow<'a> {
+    fn step(&mut self) {
+        if self.x + 1 >= self.end_x {
+            self.x = self.start_x;
+            self.y += 1;
+        } else {
+            self.x += 1;
+        }
+    }
+}
+
 impl<'a> Iterator for GridWindow<'a> {
     type Item = (Point, u64);
 
     fn next(&mut self) -> Option<Self::Item> {
-        for y in self.y..self.end_y {
-            self.y = y;
-            self.x = self.start_x;
-            for x in self.x..self.end_x {
-                self.x = x;
-                let point = Point { x: x, y: y };
-                if let Some(age) = self.grid.age_of_point(&point) {
-                    return Some((point, age));
-                }
-            }
-        }
+        if self.y >= self.end_y { return None; }
 
-        return None;
+        let point = Point{x: self.x, y: self.y};
+
+        self.step();
+
+        if let Some(age) = self.grid.age_of_point(&point) {
+            Some((point, age))
+        } else {
+            self.next()
+        }
     }
 }
 
