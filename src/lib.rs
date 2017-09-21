@@ -308,14 +308,13 @@ impl Grid {
     }
 
     fn count_neighbors(&self, point: &Point) -> usize {
-        neighbors(*point).iter().fold(
-            0,
-            |acc, point| if self.cells.contains_key(point) {
+        neighbors(*point)
+            .iter()
+            .fold(0, |acc, point| if self.cells.contains_key(point) {
                 acc + 1
             } else {
                 acc
-            },
-        )
+            })
     }
 
     fn dead_candidates(&self) -> Vec<Point> {
@@ -352,9 +351,14 @@ impl<'a> Iterator for GridWindow<'a> {
     type Item = (Point, u64);
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.y >= self.end_y { return None; }
+        if self.y >= self.end_y {
+            return None;
+        }
 
-        let point = Point{x: self.x, y: self.y};
+        let point = Point {
+            x: self.x,
+            y: self.y,
+        };
 
         self.step();
 
@@ -506,7 +510,6 @@ mod grid_tests {
             Some(generation) => assert_eq!(1, generation.clone()),
             None => panic!("Point not found"),
         }
-
     }
 
     #[test]
@@ -564,8 +567,7 @@ mod grid_tests {
 
         let grid = Grid::with_points(points.iter());
 
-        let mut result: Vec<Point> = grid
-            .window(Point { x: -2, y: -2 }, Point { x: 2, y: 2 })
+        let mut result: Vec<Point> = grid.window(Point { x: -2, y: -2 }, Point { x: 2, y: 2 })
             .map(|(point, _age)| point)
             .collect();
 
