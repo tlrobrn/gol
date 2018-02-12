@@ -107,7 +107,7 @@ fn neighbors(point: Point) -> Vec<Point> {
 ///
 /// A `tick` on the `Grid` advances the _generation_ - new `Point`s are born and old ones die
 /// according to the [rules](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life#Rules).
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Grid {
     cells: HashMap<Point, u64>,
     generation: u64,
@@ -124,10 +124,7 @@ impl Grid {
     /// let grid = Grid::empty();
     /// ```
     pub fn empty() -> Self {
-        Grid {
-            cells: HashMap::new(),
-            generation: 0,
-        }
+        Self::default()
     }
 
     /// Create a `Grid` with the given `points`.
@@ -232,7 +229,7 @@ impl Grid {
 
     /// Advance the `Grid` to the next generation.
     ///
-    /// `Point`s die and are born according to the to the [rules](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life#Rules).
+    /// `Point`s die and are born according to the [rules](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life#Rules).
     ///
     /// # Example
     ///
@@ -307,14 +304,30 @@ impl Grid {
         }
     }
 
+    /// The current generation of the `Grid`
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use gol::Grid;
+    /// let mut grid = Grid::empty();
+    /// assert_eq!(0, grid.generation());
+    ///
+    /// grid.tick();
+    /// assert_eq!(1, grid.generation());
+    /// ```
+    pub fn generation(&self) -> u64 {
+        self.generation
+    }
+
     fn count_neighbors(&self, point: &Point) -> usize {
-        neighbors(*point)
-            .iter()
-            .fold(0, |acc, point| if self.cells.contains_key(point) {
+        neighbors(*point).iter().fold(0, |acc, point| {
+            if self.cells.contains_key(point) {
                 acc + 1
             } else {
                 acc
-            })
+            }
+        })
     }
 
     fn dead_candidates(&self) -> Vec<Point> {
@@ -369,7 +382,6 @@ impl<'a> Iterator for GridWindow<'a> {
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -574,5 +586,16 @@ mod grid_tests {
         result.sort();
 
         assert_eq!(points, result);
+    }
+
+    #[test]
+    fn generation_returns_the_grids_generation() {
+        let mut grid = Grid::empty();
+
+        for _ in 0..5 {
+            grid.tick();
+        }
+
+        assert_eq!(5, grid.generation());
     }
 }
