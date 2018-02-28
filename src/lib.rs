@@ -271,7 +271,8 @@ impl Grid {
         self
     }
 
-    /// Create an iterator over the given sub-range of the `Grid`.
+    /// Create an iterator over the given bounds (inclusive) of the `Grid`.
+    ///
     ///
     /// # Example
     ///
@@ -285,7 +286,7 @@ impl Grid {
     /// let grid = Grid::with_points(&points);
     ///
     /// let mut result: Vec<Point> = grid
-    ///     .window(Point { x: 5, y: 1 }, Point { x: 6, y: 4 })
+    ///     .window(Point { x: 0, y: 0 }, Point { x: 5, y: 3 })
     ///     .map(|(point, _age)| point)
     ///     .collect();
     ///
@@ -351,7 +352,7 @@ pub struct GridWindow<'a> {
 
 impl<'a> GridWindow<'a> {
     fn step(&mut self) {
-        if self.x + 1 >= self.end_x {
+        if self.x + 1 > self.end_x {
             self.x = self.start_x;
             self.y += 1;
         } else {
@@ -364,7 +365,7 @@ impl<'a> Iterator for GridWindow<'a> {
     type Item = (Point, u64);
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.y >= self.end_y {
+        if self.y > self.end_y {
             return None;
         }
 
@@ -579,7 +580,7 @@ mod grid_tests {
 
         let grid = Grid::with_points(&points);
 
-        let mut result: Vec<Point> = grid.window(Point { x: -2, y: -2 }, Point { x: 2, y: 2 })
+        let mut result: Vec<Point> = grid.window(Point { x: -1, y: -2 }, Point { x: 1, y: 1 })
             .map(|(point, _age)| point)
             .collect();
 
