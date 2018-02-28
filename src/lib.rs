@@ -25,7 +25,7 @@
 //! use gol::{Grid, Point};
 //!
 //! let point = Point { x: 5, y: 2 };
-//! let mut grid = Grid::with_points([point].iter());
+//! let mut grid = Grid::with_points(&[point]);
 //!
 //! assert_eq!(Some(0), grid.age_of_point(&point));
 //!
@@ -134,13 +134,13 @@ impl Grid {
     /// ```rust
     /// # use gol::{Grid, Point};
     /// let point = Point{x: 1, y: 2};
-    /// let grid = Grid::with_points([point].iter());
+    /// let grid = Grid::with_points(&[point]);
     ///
     /// assert_eq!(Some(0), grid.age_of_point(&point));
     /// ```
     pub fn with_points<'a, I>(points: I) -> Self
     where
-        I: Iterator<Item = &'a Point>,
+        I: IntoIterator<Item = &'a Point>,
     {
         let mut cells = HashMap::new();
         for point in points {
@@ -178,7 +178,7 @@ impl Grid {
     /// ```rust
     /// # use gol::{Grid, Point};
     /// let point = Point{x: 1, y: 2};
-    /// let mut grid = Grid::with_points([point].iter());
+    /// let mut grid = Grid::with_points(&[point]);
     ///
     /// grid.remove_point(&point);
     ///
@@ -204,7 +204,7 @@ impl Grid {
     ///     Point { x: 5, y: 2 },
     ///     Point { x: 5, y: 3 },
     /// ];
-    /// let mut grid = Grid::with_points(points.iter());
+    /// let mut grid = Grid::with_points(&points);
     ///
     /// assert_eq!(Some(0), grid.age_of_point(&points[1]));
     /// ```
@@ -218,7 +218,7 @@ impl Grid {
     /// #     Point { x: 5, y: 2 },
     /// #     Point { x: 5, y: 3 },
     /// # ];
-    /// # let mut grid = Grid::with_points(points.iter());
+    /// # let mut grid = Grid::with_points(&points);
     /// grid.tick();
     ///
     /// assert_eq!(Some(1), grid.age_of_point(&points[1]));
@@ -240,7 +240,7 @@ impl Grid {
     ///     Point { x: 5, y: 2 },
     ///     Point { x: 5, y: 3 },
     /// ];
-    /// let mut grid = Grid::with_points(points.iter());
+    /// let mut grid = Grid::with_points(&points);
     ///
     /// grid.tick();
     ///
@@ -282,7 +282,7 @@ impl Grid {
     ///     Point { x: 5, y: 2 },
     ///     Point { x: 5, y: 3 },
     /// ];
-    /// let grid = Grid::with_points(points.iter());
+    /// let grid = Grid::with_points(&points);
     ///
     /// let mut result: Vec<Point> = grid
     ///     .window(Point { x: 5, y: 1 }, Point { x: 6, y: 4 })
@@ -412,7 +412,7 @@ mod grid_tests {
     #[test]
     fn contains_point_initialized_with() {
         let points = [Point { x: 5, y: 2 }];
-        let g = Grid::with_points(points.iter());
+        let g = Grid::with_points(&points);
 
         assert!(g.cells.contains_key(&points[0]));
         assert_eq!(1, g.cells.len());
@@ -425,7 +425,7 @@ mod grid_tests {
             Point { x: 5, y: 2 },
             Point { x: 5, y: 3 },
         ];
-        let mut g = Grid::with_points(points.iter());
+        let mut g = Grid::with_points(&points);
         g.tick();
 
         assert_eq!(0, g.cells.len());
@@ -440,7 +440,7 @@ mod grid_tests {
             Point { x: 1, y: 2 },
             Point { x: 0, y: 1 },
         ];
-        let mut g = Grid::with_points(points.iter());
+        let mut g = Grid::with_points(&points);
         g.cells.insert(Point { x: 0, y: 0 }, 0);
 
         g.tick();
@@ -454,7 +454,7 @@ mod grid_tests {
             Point { x: -1, y: 0 },
             Point { x: 1, y: 0 },
         ];
-        let mut g = Grid::with_points(points.iter());
+        let mut g = Grid::with_points(&points);
 
         g.tick();
 
@@ -469,7 +469,7 @@ mod grid_tests {
             Point { x: 5, y: 2 },
             Point { x: 5, y: 3 },
         ];
-        let mut g = Grid::with_points(points.iter());
+        let mut g = Grid::with_points(&points);
         g.tick();
 
         assert!(g.cells.contains_key(&Point { x: 5, y: 2 }));
@@ -483,7 +483,7 @@ mod grid_tests {
             Point { x: 6, y: 2 },
             Point { x: 5, y: 3 },
         ];
-        let mut g = Grid::with_points(points.iter());
+        let mut g = Grid::with_points(&points);
         g.tick();
 
         let point = Point { x: 5, y: 2 };
@@ -508,7 +508,7 @@ mod grid_tests {
             Point { x: -1, y: 0 },
             Point { x: 1, y: 0 },
         ];
-        let mut g = Grid::with_points(points.iter());
+        let mut g = Grid::with_points(&points);
 
         match g.cells.get(&points[0]) {
             Some(generation) => assert_eq!(0, generation.clone()),
@@ -533,7 +533,7 @@ mod grid_tests {
     #[test]
     fn age_of_point_returns_some_age_if_point_is_alive() {
         let points = [Point { x: 0, y: 1 }];
-        let g = Grid::with_points(points.iter());
+        let g = Grid::with_points(&points);
         assert_eq!(Some(0), g.age_of_point(&points[0]));
     }
 
@@ -550,7 +550,7 @@ mod grid_tests {
     #[test]
     fn add_point_does_not_overwrite_an_existing_point() {
         let point = Point { x: 0, y: 0 };
-        let mut g = Grid::with_points([point].iter());
+        let mut g = Grid::with_points(&[point]);
         g.generation = 1;
 
         g.add_point(point);
@@ -561,7 +561,7 @@ mod grid_tests {
     #[test]
     fn remove_point_removes_a_point() {
         let point = Point { x: 0, y: 0 };
-        let mut g = Grid::with_points([point].iter());
+        let mut g = Grid::with_points(&[point]);
 
         g.remove_point(&point);
 
@@ -577,7 +577,7 @@ mod grid_tests {
         ];
         points.sort();
 
-        let grid = Grid::with_points(points.iter());
+        let grid = Grid::with_points(&points);
 
         let mut result: Vec<Point> = grid.window(Point { x: -2, y: -2 }, Point { x: 2, y: 2 })
             .map(|(point, _age)| point)
