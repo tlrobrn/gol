@@ -34,8 +34,8 @@
 //! ```
 #![warn(missing_docs)]
 
-use std::ops::{Add, Sub};
 use std::collections::HashMap;
+use std::ops::{Add, Sub};
 
 /// A point on the 2D integer plane.
 ///
