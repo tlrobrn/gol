@@ -580,7 +580,8 @@ mod grid_tests {
 
         let grid = Grid::with_points(&points);
 
-        let mut result: Vec<Point> = grid.window(Point { x: -1, y: -2 }, Point { x: 1, y: 1 })
+        let mut result: Vec<Point> = grid
+            .window(Point { x: -1, y: -2 }, Point { x: 1, y: 1 })
             .map(|(point, _age)| point)
             .collect();
 
